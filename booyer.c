@@ -12,12 +12,12 @@
 
 int chars_compared;
 
-void print_line(uint8_t *string, uint32_t pos, uint32_t patlen){
+void print_line(uint8_t *string, uint32_t pos, uint32_t patlen, uint32_t * linenum){
   uint8_t * cpy_str = string;
   int offset = 3;
   pos -= offset;
   cpy_str += pos;
-  printf("line %d: %s\n", 1, (char*)cpy_str);
+  printf("line %d: %s\n", *linenum, (char*)cpy_str);
   return;
 }
 
@@ -153,7 +153,7 @@ void make_delta2(int *delta2, uint8_t *pat, int32_t patlen) {
   #endif
 }
 
-uint32_t boyer_moore (uint8_t *string, uint32_t stringlen, uint8_t *pat, uint32_t patlen) {
+uint32_t boyer_moore (uint8_t *string, uint32_t stringlen, uint8_t *pat, uint32_t patlen, uint32_t * linenum) {
   int i;
   int delta1[ALPHABET_LEN];
   int *delta2 = malloc(patlen * sizeof(int));
@@ -172,10 +172,12 @@ uint32_t boyer_moore (uint8_t *string, uint32_t stringlen, uint8_t *pat, uint32_
       --j;
       chars_compared++;
     }
+    /*if (string[i] == '\n')
+     *linenum++;*/
     //Here is where Boyer returns the position
     //TODO: make this so that boyer keeps going and instead call another function to print out the surrounding text to the screen
     if (j < 0) {
-      print_line(string, (uint32_t) i+1, patlen);
+      print_line(string, (uint32_t) i+1, patlen, linenum);
       //printf("%c %d\n", string[i], i);
       chars_compared += patlen;
       i += patlen + 1;
@@ -200,26 +202,40 @@ uint32_t boyer_moore (uint8_t *string, uint32_t stringlen, uint8_t *pat, uint32_
 }
 
 void test(uint8_t *string, uint8_t *pat) {
+  uint32_t linenum = 0;
+  uint8_t buffer[4096];
+  FILE *fp;
   printf("-------------------------------------------------------\n");
   printf("Looking for '%s' in '%s':\n", pat, string);
 
-  uint32_t pos = boyer_moore(string, strlen(string), pat, strlen(pat));
-  #ifdef DEBUG
-  printf("\n");
-  #endif
-  if (pos == 0 && chars_compared != strlen(pat))
-    printf("Not Found - ");
-  else
-    printf("Found at position %u - ", pos);
-  printf("%d chars compared.\n", chars_compared);
+  //TODO: open filename for reading and start to fill a string buffer
+  /* opening file for reading */
+  fp = fopen((char*)string , "r");
+  if(fp == NULL) {
+    perror("Error opening file");
+    exit(EXIT_FAILURE);
+  }
+  while( fgets (buffer, 4096, fp)!=NULL ) {
+    /* writing content to stdout */
+    uint32_t pos = boyer_moore(buffer, strlen(buffer), pat, strlen(pat), &linenum);
+#ifdef DEBUG
+    printf("\n");
+#endif
+    /*if (pos == 0 && chars_compared != strlen(pat))
+      printf("Not Found - ");
+    else
+    printf("Found at position %u - ", pos);*/
+    printf("%d chars compared.\n", chars_compared);
+    ++linenum;
+  }
 }
 
 int main(int argc, char const *argv[]) {
   if (argc < 3){
-    printf("Usage: bm [string] [pattern]\n");
+    printf("Usage: bm [inputfile] [pattern]\n");
     return 0;
   }
-  test(argv[1], argv[2]);
+  test((uint8_t*)argv[1], (uint8_t*)argv[2]);
   /*
   test(".....ABYXCDEYX", "ABYXCDEYX");
   test("WHICH-FINALLY-HALTT-THAT", "TT-THAT");
