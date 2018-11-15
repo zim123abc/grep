@@ -40,10 +40,39 @@ int insertCheckHash(const char * str);
 /*Josh functions*/
 void print_line(uint8_t *string, int pos, uint32_t patlen, uint32_t * linenum, uint8_t *filename){
   uint8_t * cpy_str = string;
-  int offset = 3;
-  pos -= offset;
-  cpy_str += pos;
-  printf("%s contains %s on line %d: %s\n", filename,term,*linenum, (char*)cpy_str);
+  int offset = 0;
+  cpy_str += pos; //move cpy_str pointer to point to the found string
+  int j = 0;
+  //index to an offset of -3 from the found term for pretty printing
+  while(j < 3){
+    if (cpy_str[offset] != '\0' && cpy_str[offset] != '\n' && cpy_str[offset] != '\t'){
+      if (cpy_str[offset] == ' '){
+	++j;
+      }
+      offset--;
+    }
+    else{
+      offset++;
+      break;
+    }
+  }
+  cpy_str += offset;
+  //printf("%s contains %s on line %d: %s\n", filename, term, *linenum, (char*)cpy_str);
+  printf("%s contains %s on line %d: ", filename, term, *linenum);
+  int i;
+  j = 0;
+  while (j < 40){
+    if(cpy_str[j] != '\n' && cpy_str[j] != '\0'){
+      if (cpy_str[j] != '\t')
+	printf("%c", cpy_str[j]);
+      if (cpy_str[j] == ' ')
+	++i;
+      ++j;
+    }
+    else
+      break;
+  }
+  printf("\n");
   return;
 }
 
