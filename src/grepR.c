@@ -26,6 +26,7 @@ int bloom[BLOOMSIZE];
 char * term;
 char cwd[PATH_MAX];
 pthread_mutex_t lock;
+//pthread_mutex_t sleeplock;
 int LOOP;
 void *dirLoop(void *);
 void search(char * fName);
@@ -329,15 +330,17 @@ int main(int argc, char *argv[])
 	getcwd(cwd, sizeof(cwd));
 	//create thread on this
 	pthread_mutex_init(&lock,NULL);
+	//pthread_mutex_init(&sleeplock,NULL);
 	insertHash(cwd);
+	//pthread_mutex_lock(&sleeplock);
 	pthread_create(&wait[0], NULL, dirLoop, NULL);
 	//wait here
 	//printf("Waiting at join\n");fflush(stdout);
-	pthread_join(wait[0], NULL);
+	while(LOOP != 0);
 
 	//printf("At mutex wait\n");fflush(stdout);
 	pthread_mutex_destroy(&lock);
-	
+	//pthread_mutex_destroy(&sleeplock);
 	
 	return 0;
 	
@@ -465,7 +468,7 @@ void *dirLoop(void * Dirname)
 	char link[4000];
 	int *Junk;
 	list = 0;
-	
+	pthread_detach(pthread_self());
 	if(Dirname == NULL)
 	{nul = 1;}
 	else
@@ -579,7 +582,7 @@ void *dirLoop(void * Dirname)
 	pthread_mutex_lock(&lock);
 	--LOOP;
 	pthread_mutex_unlock(&lock);
-	while(LOOP !=0);
+	//pthread_mutex_lock(&sleeplock);
 	pthread_exit(NULL);
 }
 
@@ -591,7 +594,6 @@ void search(char * fName)
 	//printf("File: %s\n", fName);fflush(stdout);
 	return;
 }
-
 
 
 
