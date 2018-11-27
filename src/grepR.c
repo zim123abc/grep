@@ -8,7 +8,7 @@
 #include <string.h>
 #include <limits.h>
 #include <stdbool.h>
-
+#include <unistd.h>
 
 /*Josh's defines*/
 #define ALPHABET_LEN 256
@@ -44,28 +44,38 @@ void print_line(uint8_t *string, int pos, uint32_t patlen, uint32_t * linenum, u
   int offset = 0;
   cpy_str += pos; //move cpy_str pointer to point to the found string
   int j = 0;
+  int z = 0;
   //index to an offset of -3 from the found term for pretty printing
-  while(j < 3){
+  while(j < 3 && z < 30){
     if (cpy_str[offset] != '\0' && cpy_str[offset] != '\n' && cpy_str[offset] != '\t'){
       if (cpy_str[offset] == ' '){
 	++j;
       }
       offset--;
+      z++;
     }
     else{
       offset++;
       break;
     }
   }
+  if (cpy_str[offset] == '\0' && cpy_str[offset] == '\n' && cpy_str[offset] == '\t')
+    ++offset;
   cpy_str += offset;
-  //printf("%s contains %s on line %d: %s\n", filename, term, *linenum, (char*)cpy_str);
-  printf("%s contains %s on line %d: ", filename, term, *linenum);
+
   int i;
   j = 0;
+  char buf[41];
+  memset(buf, 0, sizeof(buf));
+  char temp[2];
+  temp[1] = '\0';
   while (j < 40){
     if(cpy_str[j] != '\n' && cpy_str[j] != '\0'){
-      if (cpy_str[j] != '\t')
-	printf("%c", cpy_str[j]);
+      if (cpy_str[j] != '\t'){
+	temp[0] = cpy_str[j];
+	strcat(buf, temp);
+	//snprintf(buf, 40, "%s%c", buf, cpy_str[j]);
+      }
       if (cpy_str[j] == ' ')
 	++i;
       ++j;
@@ -73,6 +83,9 @@ void print_line(uint8_t *string, int pos, uint32_t patlen, uint32_t * linenum, u
     else
       break;
   }
+  /*if (strlen(buf) < 2)
+    return;*/
+  printf("%s contains %s on line %d: %s", filename, term, *linenum, buf);
   printf("\n");
   return;
 }
@@ -290,6 +303,7 @@ void test(uint8_t *string, uint8_t *pat) {
    // printf("%d chars compared.\n", chars_compared);
     ++linenum;
   }
+  fclose(fp);
   return;
 }
 

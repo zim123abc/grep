@@ -1,2 +1,2 @@
-a.out : grepR.c
-	gcc -g -O0 grepR.c -lpthread
+grepR.x : grepR.c
+	gcc -o grepR.x grepR.c -lpthread
