@@ -90,6 +90,9 @@ void print_line(uint8_t *string, int pos, uint32_t patlen, uint32_t * linenum, u
   return;
 }
 
+//The implementation of Booyer-Moore was copied from https://github.com/likejazz/boyer-moore-string-search and modified appropriately
+
+
 // delta1 table: delta1[c] contains the distance between the last
 // character of pat and the rightmost occurrence of c in pat.
 // If c does not occur in pat, then delta1[c] = patlen.
